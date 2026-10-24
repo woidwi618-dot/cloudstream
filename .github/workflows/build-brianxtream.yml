@@ -29,6 +29,10 @@ jobs:
 
       - name: Build APK
         run: ./gradlew tasks --all.
+              
+      - name: Find APK
+        if: always()
+        run: find app/build/outputs -type f
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
