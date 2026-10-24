@@ -1309,6 +1309,58 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
             }
         }
 
+/* BrianXtream intro: MOD BY YOGA FEBRIAN */
+val introOverlay = android.widget.FrameLayout(this).apply {
+    setBackgroundColor(android.graphics.Color.TRANSPARENT)
+    isClickable = true
+    isFocusable = true
+}
+
+val introText = android.widget.TextView(this).apply {
+    text = "MOD BY YOGA FEBRIAN"
+    setTextColor(android.graphics.Color.WHITE)
+    textSize = 12f
+    gravity = Gravity.CENTER
+    setShadowLayer(4f, 1f, 1f, android.graphics.Color.BLACK)
+}
+
+introOverlay.addView(
+    introText,
+    android.widget.FrameLayout.LayoutParams(
+        ViewGroup.LayoutParams.WRAP_CONTENT,
+        ViewGroup.LayoutParams.WRAP_CONTENT,
+        Gravity.CENTER
+    )
+)
+
+val decorView = window.decorView as ViewGroup
+
+decorView.addView(
+    introOverlay,
+    ViewGroup.LayoutParams(
+        ViewGroup.LayoutParams.MATCH_PARENT,
+        ViewGroup.LayoutParams.MATCH_PARENT
+    )
+)
+
+introOverlay.alpha = 0f
+introOverlay.animate()
+    .alpha(1f)
+    .setDuration(200)
+    .withEndAction {
+        introOverlay.postDelayed({
+            introOverlay.animate()
+                .alpha(0f)
+                .setDuration(250)
+                .withEndAction {
+                    (introOverlay.parent as? ViewGroup)
+                        ?.removeView(introOverlay)
+                }
+                .start()
+        }, 1100)
+    }
+    .start()
+
         // overscan
         val padding = settingsManager.getInt(getString(R.string.overscan_key), 0).toPx
         binding?.homeRoot?.setPadding(padding, padding, padding, padding)
