@@ -1,0 +1,102 @@
+name: BrianXtream APK Builder
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build BrianXtream APK
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Set BrianXtream display name in all Android and Compose resources
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          import sys
+
+          roots = [
+              Path("app/src/main/res"),
+              Path("shared/src/commonMain/composeResources"),
+          ]
+          files = []
+          for root in roots:
+              if root.exists():
+                  files.extend(root.rglob("*.xml"))
+
+          app_name_hits = 0
+          play_name_hits = 0
+          changed_files = []
+
+          def replace_value(xml, key, value):
+              pattern = re.compile(
+                  r'(<string\b(?=[^>]*\bname=["\']' + re.escape(key) +
+                  r'["\'])[^>]*>).*?(</string>)',
+                  re.DOTALL,
+              )
+              return pattern.subn(lambda m: m.group(1) + value + m.group(2), xml)
+
+          for path in files:
+              original = path.read_text(encoding="utf-8")
+              updated, n1 = replace_value(original, "app_name", "BrianXtream")
+              updated, n2 = replace_value(updated, "play_with_app_name", "Play with BrianXtream")
+              if n1 or n2:
+                  path.write_text(updated, encoding="utf-8")
+                  changed_files.append(str(path))
+                  app_name_hits += n1
+                  play_name_hits += n2
+
+          if app_name_hits == 0:
+              print("ERROR: did not find any app_name string resource to change.")
+              sys.exit(1)
+
+          print("Updated app_name resources:", app_name_hits)
+          print("Updated play_with_app_name resources:", play_name_hits)
+          print("Files changed:", ", ".join(changed_files))
+          PY
+
+      - name: Build stable debug APK
+        shell: bash
+        run: |
+          chmod +x ./gradlew
+          ./gradlew --no-daemon --stacktrace :app:assembleStableDebug
+
+      - name: Rename APK to BrianXtream.apk
+        shell: bash
+        run: |
+          APK_PATH="$(find app/build/outputs/apk/stable/debug -maxdepth 1 -type f -name '*.apk' -print -quit)"
+          if [ -z "$APK_PATH" ]; then
+            echo "ERROR: Build finished but no APK was found in app/build/outputs/apk/stable/debug."
+            find app/build/outputs/apk -type f -print || true
+            exit 1
+          fi
+          cp "$APK_PATH" "$RUNNER_TEMP/BrianXtream.apk"
+          ls -lh "$RUNNER_TEMP/BrianXtream.apk"
+
+      - name: Upload BrianXtream APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: BrianXtream-APK
+          path: ${{ runner.temp }}/BrianXtream.apk
+          if-no-files-found: error
+          retention-days: 14
