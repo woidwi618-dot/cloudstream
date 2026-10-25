@@ -1310,9 +1310,7 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
         }
 
 
-        }, 1100)
-    }
-    .start()
+        
 
         // overscan
         val padding = settingsManager.getInt(getString(R.string.overscan_key), 0).toPx
