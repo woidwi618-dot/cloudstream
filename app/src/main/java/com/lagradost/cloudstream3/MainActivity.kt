@@ -1351,7 +1351,7 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
                             introRoot.removeView(introText)
                         }
                         .start()
-                }, 1000L)
+                }, 3000L)
             }
             .start()
 
