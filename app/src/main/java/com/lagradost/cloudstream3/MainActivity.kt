@@ -9,6 +9,8 @@ import android.content.SharedPreferences
 import android.content.res.ColorStateList
 import android.content.res.Configuration
 import android.graphics.Rect
+import android.graphics.Color
+import android.graphics.Typeface
 import android.os.Bundle
 import android.util.AttributeSet
 import android.util.Log
@@ -22,6 +24,8 @@ import android.view.WindowManager
 import android.widget.CheckBox
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.FrameLayout
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.annotation.IdRes
@@ -1308,7 +1312,48 @@ class MainActivity : AppCompatActivity(), ColorPickerDialogListener, BiometricCa
                 }
             }
         }
+        // BrianXtream intro text overlay
+        val introRoot = findViewById<ViewGroup>(android.R.id.content)
 
+        val introText = TextView(this).apply {
+            text = "MOD BY YOGA FEBRIAN"
+            setTextColor(Color.WHITE)
+            textSize = 14f
+            typeface = Typeface.create(
+                "sans-serif-medium",
+                Typeface.NORMAL
+            )
+            gravity = Gravity.CENTER
+            setShadowLayer(3f, 1f, 1f, Color.BLACK)
+            alpha = 0f
+        }
+
+        val introParams = FrameLayout.LayoutParams(
+            ViewGroup.LayoutParams.WRAP_CONTENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT,
+            Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL
+        ).apply {
+            bottomMargin =
+                (100 * resources.displayMetrics.density).toInt()
+        }
+
+        introRoot.addView(introText, introParams)
+
+        introText.animate()
+            .alpha(1f)
+            .setDuration(250L)
+            .withEndAction {
+                introText.postDelayed({
+                    introText.animate()
+                        .alpha(0f)
+                        .setDuration(250L)
+                        .withEndAction {
+                            introRoot.removeView(introText)
+                        }
+                        .start()
+                }, 1000L)
+            }
+            .start()
 
         
 
